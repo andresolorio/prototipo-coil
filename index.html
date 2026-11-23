@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#a6a9ae">
+  <title>Aplicación COIL</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #101114;
+      background: #e8edf4;
+      font-synthesis: none;
+      --paper: #eef5ff;
+      --blue: #5da1fa;
+      --lavender: #ded7ff;
+      --gray: #a6a9ae;
+      --purple: #50495f;
+      --card-shadow: 0 3px 4px #00000030;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background: #e8edf4;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    #app {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .device {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: min(100%, 430px);
+      height: 100vh;
+      height: 100dvh;
+      min-height: 580px;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: 0 0 28px #25354a20;
+    }
+
+    .status-bar {
+      height: 32px;
+      flex: 0 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: #17181a;
+      background: var(--gray);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-right { display: flex; align-items: center; gap: 5px; }
+    .status-camera { width: 14px; height: 14px; margin-right: auto; margin-left: 35%; border-radius: 50%; background: #17181a; }
+    .signal { width: 0; height: 0; border-right: 8px solid #44474b; border-top: 8px solid transparent; }
+    .battery { position: relative; width: 15px; height: 10px; border: 1.5px solid #44474b; border-radius: 2px; }
+    .battery::before { position: absolute; inset: 2px; background: #44474b; content: ""; }
+    .battery::after { position: absolute; top: 2px; right: -3px; width: 2px; height: 4px; background: #44474b; content: ""; }
+
+    .screen {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: #c4cfdd transparent;
+    }
+
+    .home-header { padding: 35px 30px 12px; }
+    .home-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .home-heading h1 { margin: 0; font-size: 28px; line-height: 1.08; letter-spacing: -.5px; }
+    .home-heading p { margin: 3px 0 0; font-size: 16px; }
+
+    .icon-button {
+      display: inline-grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .icon-button:hover { background: #0000000c; }
+    .icon-button:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #3989f5; outline-offset: 2px; }
+    .dots-button { width: 34px; }
+    .dots-button svg { fill: #17181a; stroke: none; }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 50px;
+      margin: 5px 16px 27px;
+      padding: 0 17px;
+      border-radius: 19px;
+      background: #fff;
+      box-shadow: var(--card-shadow);
+    }
+
+    .search input {
+      width: 100%;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 16px;
+    }
+
+    .section-heading {
+      margin: 0 18px 20px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .card-list { display: grid; gap: 18px; padding: 0 16px 28px; }
+
+    .choice-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 78px 1fr 30px;
+      align-items: center;
+      gap: 17px;
+      width: 100%;
+      min-height: 112px;
+      padding: 15px 14px 15px 20px;
+      border: 0;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: var(--card-shadow);
+      text-align: left;
+    }
+
+    button.choice-card { cursor: pointer; }
+    button.choice-card:hover { transform: translateY(-1px); box-shadow: 0 5px 10px #00000022; }
+    .choice-icon {
+      display: grid;
+      place-items: center;
+      width: 78px;
+      height: 78px;
+      border-radius: 15px;
+      background: #dedede;
+    }
+    .choice-copy { min-width: 0; }
+    .choice-copy strong { display: block; margin-bottom: 3px; font-size: 16px; line-height: 1.14; }
+    .choice-copy span { display: block; color: #393a3d; font-size: 14px; line-height: 1.2; }
+    .choice-copy ul { margin: 4px 0 0; padding-left: 19px; color: #393a3d; font-size: 14px; line-height: 1.16; }
+    .card-arrow { color: var(--purple); }
+    .card-arrow svg { fill: currentColor; stroke: none; }
+
+    .page-top {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px 7px;
+    }
+
+    .page-top .back-button { width: 39px; height: 39px; background: #fff; }
+    .page-top h1 { flex: 1; margin: 0; font-size: 21px; line-height: 1.12; }
+    .breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 6px;
+      margin: 7px 21px 14px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .breadcrumbs button {
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .breadcrumbs button:hover { text-decoration: underline; }
+    .search + .section-heading { margin-top: 0; }
+    .area-card { min-height: 142px; grid-template-columns: 78px 1fr 30px; }
+    .area-card.compact { min-height: 112px; }
+    .area-card .choice-copy strong { font-size: 16px; }
+    .list-subtitle { margin: -8px 19px 21px; font-size: 14px; }
+
+    .detail-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 18px 8px;
+    }
+
+    .detail-top .back-button { width: 40px; height: 40px; background: #fff; }
+    .detail-body { padding: 4px 18px 34px; }
+    .detail-breadcrumbs { margin: 8px 0 26px; font-size: 13px; }
+    .detail-title { margin: 0; font-size: 23px; line-height: 1.12; }
+    .detail-subtitle { margin: 4px 0 20px; font-size: 18px; line-height: 1.18; }
+    .divider { height: 1px; margin: 18px 0 22px; background: #d3d8e0; }
+    .detail-section-title { margin: 0 4px 16px; font-size: 19px; line-height: 1.2; }
+    .data-list { display: grid; gap: 12px; }
+    .data-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 58px;
+      padding: 12px 15px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: var(--card-shadow);
+      font-size: 14px;
+      line-height: 1.2;
+    }
+    .data-card:nth-child(2), .data-card:nth-child(3) { min-height: 77px; }
+    .data-icon { flex: 0 0 44px; display: grid; place-items: center; color: #050607; }
+    .data-card p { margin: 0; }
+    .data-card strong { margin-right: 4px; }
+
+    .accordion-list { display: grid; gap: 18px; margin: 0 0 36px; }
+    .accordion {
+      width: 100%;
+      min-height: 92px;
+      display: grid;
+      grid-template-columns: 60px 1fr 22px;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 15px;
+      border: 0;
+      border-radius: 20px;
+      background: #fff;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .accordion-icon { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 15px; background: #dedede; }
+    .accordion-label { text-align: center; font-weight: 700; font-size: 15px; }
+    .accordion-chevron { color: #1478f9; transition: transform .18s ease; }
+    .accordion[aria-expanded="true"] .accordion-chevron svg { transform: rotate(180deg); }
+    .accordion-panel {
+      margin: -14px 4px 0;
+      padding: 17px 18px;
+      border-radius: 0 0 16px 16px;
+      background: #fff;
+      color: #3e4248;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .accordion-panel[hidden] { display: none; }
+
+    .tabs-title { margin: 0 4px 14px; font-size: 19px; }
+    .tabs { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .tab {
+      flex: 1;
+      min-height: 30px;
+      padding: 5px 8px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--lavender);
+      font-size: 11px;
+      line-height: 1.1;
+      cursor: pointer;
+    }
+    .tab.active { color: #fff; background: var(--blue); }
+    .tab.static { cursor: default; }
+    .content-card {
+      margin: 0 0 26px;
+      padding: 21px 22px;
+      border-radius: 19px;
+      background: #fff;
+    }
+    .content-card h3 { margin: 0 0 4px; font-size: 16px; }
+    .content-card p { margin: 0; color: #424448; font-size: 14px; line-height: 1.3; }
+    .video-placeholder {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-height: 150px;
+      margin-top: 15px;
+      border: 0;
+      border-radius: 16px;
+      background: #c8e1ff;
+      color: #17181a;
+      cursor: default;
+    }
+    .play-mark { font-size: 42px; line-height: 1; }
+    .video-label { margin-top: 4px; font-size: 13px; }
+    .bibliography { margin-top: 42px; }
+    .bibliography h2 { margin: 0 4px 17px; font-size: 19px; }
+    .reference-card {
+      padding: 20px 22px;
+      border-radius: 20px;
+      background: #fff;
+      color: #44464b;
+      font-size: 13px;
+      line-height: 1.32;
+    }
+    .reference-card p { margin: 0 0 14px; }
+    .reference-card p:last-child { margin-bottom: 0; }
+
+    .scale-sheet {
+      overflow: hidden;
+      margin-top: 12px;
+      border: 1px solid #9dbbe6;
+      border-radius: 10px;
+      background: #eef5ff;
+    }
+    .scale-sheet h3 { margin: 0; padding: 12px; color: #24466f; background: #d8eaff; text-align: center; font-size: 14px; }
+    .scale-row { display: grid; grid-template-columns: 43px 1fr; gap: 9px; padding: 9px 10px; border-top: 1px solid #c8d8ec; font-size: 12px; line-height: 1.25; }
+    .scale-score { align-self: start; padding: 4px; border-radius: 8px; background: #4a678e; color: #fff; text-align: center; font-weight: 700; }
+    .validation-box { padding: 15px; border: 1px solid #8cc9ed; border-radius: 14px; background: #e1f4ff; }
+    .validation-box strong { display: block; margin-bottom: 8px; font-size: 14px; }
+    .validation-box p { font-size: 13px; }
+    .country-list { display: grid; gap: 8px; margin-top: 18px; font-size: 13px; }
+    .country-pill { display: inline-block; width: fit-content; padding: 4px 10px; border: 1px solid #54c783; border-radius: 18px; background: #e0ffec; font-weight: 700; }
+    .country-pill.warn { border-color: #ff9a3e; background: #fff0cf; }
+    .notice { margin-top: 14px !important; padding: 12px; border: 1px solid #f4a32b; border-radius: 12px; background: #fff0c8; }
+    .stretch-switch { display: flex; gap: 12px; margin: 16px 0 20px; }
+    .stretch-switch span { flex: 1; padding: 9px 12px; border-radius: 18px; background: var(--lavender); text-align: center; font-size: 13px; }
+    .stretch-switch span:first-child { color: #fff; background: var(--blue); }
+
+    .bottom-nav {
+      display: flex;
+      flex: 0 0 66px;
+      justify-content: space-around;
+      align-items: center;
+      background: var(--gray);
+      color: #fff;
+    }
+
+    .nav-item {
+      display: grid;
+      min-width: 78px;
+      justify-items: center;
+      gap: 1px;
+      padding: 4px 8px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .nav-item:hover { color: #fff; background: #ffffff19; border-radius: 10px; }
+    .nav-item svg { stroke: currentColor; }
+
+    .backdrop {
+      position: absolute;
+      z-index: 5;
+      inset: 32px 0 66px;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: #11182755;
+    }
+    .dialog {
+      width: min(320px, 100%);
+      max-height: 100%;
+      overflow: auto;
+      padding: 18px 18px 15px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 12px 35px #00000030;
+    }
+    .dialog h2 { margin: 0 0 13px; font-size: 19px; line-height: 1.18; }
+    .dialog p { margin: 0 8px 12px; font-size: 14px; line-height: 1.32; }
+    .dialog ul { margin: 9px 0 14px; padding-left: 19px; font-size: 13px; line-height: 1.3; }
+    .dialog-button {
+      display: block;
+      width: 100%;
+      min-height: 36px;
+      margin-top: 11px;
+      border: 0;
+      border-radius: 18px;
+      background: #e4e9f1;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .trace-dialog { padding-bottom: 12px; }
+    .trace-dialog h2 { margin-bottom: 11px; }
+    .trace-dialog .trace-step { margin: 0 4px 10px; font-size: 13px; }
+    .trace-dialog .trace-list { margin: -3px 0 12px; padding-left: 21px; font-size: 12px; line-height: 1.25; }
+    .toast {
+      position: absolute;
+      z-index: 7;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 15px;
+      border-radius: 20px;
+      background: #222831;
+      color: #fff;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 430px) {
+      .device { box-shadow: none; }
+    }
+    @media (min-width: 700px) {
+      body { padding: 16px 0; }
+      .device { height: min(960px, calc(100vh - 32px)); min-height: 620px; border: 1px solid #d5dce7; border-radius: 28px; }
+      .status-bar { border-radius: 27px 27px 0 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const app = document.querySelector("#app");
+    const state = { screen: "home", overlay: null, toneTab: "pauta", accordions: {}, query: "" };
+
+    const iconPaths = {
+      search: '<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>',
+      back: '<path d="m15 18-6-6 6-6"/>',
+      chevron: '<path d="m6 9 6 6 6-6"/>',
+      arrow: '<path d="M5 12h13"/><path d="m13 5 7 7-7 7"/>',
+      dots: '<circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/>',
+      info: '<circle cx="12" cy="12" r="10"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none"/>',
+      plus: '<path d="M12 5v14M5 12h14"/>',
+      settings: '<path d="m10 2-.5 2.2a8 8 0 0 0-1.6.9L5.8 4 4 7.2l1.8 1.5a8 8 0 0 0 0 1.9L4 12.1l1.8 3.2 2.1-1.1a8 8 0 0 0 1.6.9L10 17h4l.5-1.9a8 8 0 0 0 1.6-.9l2.1 1.1 1.8-3.2-1.8-1.5a8 8 0 0 0 0-1.9L20 7.2 18.2 4l-2.1 1.1a8 8 0 0 0-1.6-.9L14 2z"/><circle cx="12" cy="9.8" r="2.5" fill="#a6a9ae"/>',
+      brain: '<path d="M12 4c-2-3-6-1-6 2-3 0-4 4-2 6-2 3 0 6 3 6 1 3 4 3 5 1z"/><path d="M12 4c2-3 6-1 6 2 3 0 4 4 2 6 2 3 0 6-3 6-1 3-4 3-5 1zM12 4v15M7 8c2 0 2 2 1 3M17 8c-2 0-2 2-1 3M7 15c2-1 3 0 3 2M17 15c-2-1-3 0-3 2"/>',
+      hand: '<path d="M8 11V5a1.7 1.7 0 0 1 3.4 0v5-7a1.7 1.7 0 0 1 3.4 0v7-5a1.7 1.7 0 0 1 3.4 0v7-3a1.7 1.7 0 0 1 3.4 0v8c0 4-3 7-7 7h-2c-2 0-3.5-.8-5-2.5L3 15a1.8 1.8 0 0 1 2.6-2.5L8 15"/>',
+      arm: '<path d="M4 20c4 2 11 2 15 0 2-1 3-3 2-5-1-2-3-2-5-1l-2 1-1-5 3-4c1-2-1-4-3-2l-4 4-2 6c-2 1-4 3-3 6z"/><path d="M9 10c2 1 3 2 3 4"/>',
+      leg: '<path d="M7 3h7l1 7 2 2v3l3 2v3h-5l-3-4-1-6-4-1z"/><path d="M6 3v7l4 2"/>',
+      balance: '<path d="M12 3v17M6 21h12M4 7h16M6 7l-4 8h8L6 7zm12 0-4 8h8l-4-8z"/>',
+      walk: '<circle cx="14" cy="4" r="2"/><path d="m12 7-3 5 4 2 1 5m-5-7-4 3-2 5m11-7 4 3 2 5"/>',
+      stairs: '<path d="M4 20h5v-5h5v-5h5V5h2"/>',
+      transfer: '<path d="M4 7h14l-4-4M20 17H6l4 4"/>',
+      stretch: '<path d="M4 20h17M6 19l13-14M6 19l1-8 7 8"/>',
+      list: '<path d="M9 6h12M9 12h12M9 18h12M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>',
+      house: '<path d="m3 11 9-7 9 7M5 10v10h5v-6h4v6h5V10"/>',
+      waves: '<path d="M4 9a3 3 0 0 1 0 6m5-9a7 7 0 0 1 0 12m5-15a11 11 0 0 1 0 18m4-15a7 7 0 0 1 0 12"/>',
+      muscle: '<path d="M4 14c2-3 2-6 3-8l3 1 2 4 3 1c2-1 4-1 5 1 2 3-1 6-5 7H8c-3 0-5-2-4-6z"/><path d="m10 9 3-3 2 2-2 4"/>',
+      coin: '<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2"/>',
+      case: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M3 12h18"/>',
+      cap: '<path d="m2 9 10-5 10 5-10 5zM6 12v5c3 2 9 2 12 0v-5M22 9v7"/>',
+      clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/>',
+      target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+      people: '<circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5v1"/>',
+      video: '<path d="m9 7 9 5-9 5z"/>',
+      check: '<path d="m5 12 4 4L19 6"/>',
+      file: '<path d="M6 3h8l4 4v14H6zM14 3v5h5M9 13l2 2 4-4"/>'
+    };
+
+    function icon(name, size = 25) {
+      const path = iconPaths[name] || iconPaths.file;
+      const fill = ["dots", "settings", "arrow"].includes(name) ? 'fill="currentColor"' : 'fill="none"';
+      return `<svg aria-hidden="true" width="${size}" height="${size}" viewBox="0 0 24 24" ${fill} stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+    }
+
+    const evaluations = {
+      tone: {
+        title: "Tono muscular",
+        subtitle: "Escala de Ashworth modificada",
+        data: [
+          ["coin", "Costo:", "Gratuito y de acceso libre"],
+          ["case", "Equipo necesario:", "Camilla o superficie adecuada para posicionar al usuario"],
+          ["cap", "Formación requerida:", "No se requiere certificación ni licencia profesional."],
+          ["clock", "Tiempo:", "Alrededor de 5 minutos"]
+        ],
+        purpose: "Evaluar el tono muscular y la resistencia al movimiento pasivo en las extremidades.",
+        population: "Personas con alteraciones neurológicas que presentan cambios del tono muscular o espasticidad.",
+        procedure: "Se examinan los principales grupos musculares de las extremidades inferiores, asignando una puntuación de 0 a 4.",
+        references: [
+          "Sotelo, E. (2025). La Escala de Ashworth Modificada: revisión de sus fundamentos y aplicaciones para profesionales en fisioterapia. Revista de Investigación Científica y Tecnológica, 9(2), 177–189.",
+          "Universidad de O’Higgins. (2026). Compilado de estrategias estandarizadas de evaluación en terapia ocupacional. Universidad de O’Higgins."
+        ]
+      },
+      strength: {
+        title: "Evaluación de fuerza",
+        subtitle: "Escala MRC (Medical Research Council)",
+        data: [
+          ["coin", "Costo:", "Gratuito y de acceso libre"],
+          ["case", "Equipo necesario:", "Una hoja de registro y un espacio físico para realizar la evaluación."],
+          ["cap", "Formación requerida:", "No requiere certificación ni licencia profesional."],
+          ["clock", "Tiempo:", "Alrededor de 5 a 10 minutos"]
+        ],
+        purpose: "Evaluar y clasificar la fuerza muscular.",
+        population: "Usuarios con patologías neurológicas secueladas o en etapas de rehabilitación. En caso de accidente cerebrovascular, sirve para cuantificar el déficit motor de las extremidades.",
+        procedure: "Se examinan los principales grupos musculares y se asigna una puntuación de 0 a 5 según la fuerza muscular observada.",
+        references: [
+          "UK Research and Innovation. (s. f.). UK Research and Innovation.",
+          "Physiotutors. (s. f.). Escala MRC | Clasificación de la fuerza muscular | Pruebas de fuerza.",
+          "Australian Government Department of Health and Aged Care. (s. f.). Neurological scales. Criteria Blood."
+        ]
+      },
+      transitions: {
+        title: "Transiciones",
+        subtitle: "Escala de valoración motora (Fugl-Meyer Assessment, sección extremidades inferiores)",
+        data: [
+          ["coin", "Costo:", "Gratuito y de acceso libre"],
+          ["case", "Equipo necesario:", "Silla firme, cronómetro, camilla de exploración, básculas de doble pesada y una escala de valoración clínica."],
+          ["cap", "Formación requerida:", "Fisioterapeuta o profesional de rehabilitación capacitado en neurorehabilitación."],
+          ["clock", "Tiempo:", "Alrededor de 15 a 30 minutos"]
+        ],
+        purpose: "Evaluar la alteración del control motor voluntario, el tono muscular y la simetría en la carga de peso durante las transiciones, orientando el pronóstico funcional y la prevención de caídas.",
+        population: "Personas adultas con ACV isquémico agudo, subagudo, hemiparesia o hemiplejia contralateral.",
+        procedure: "Valoración de la capacidad de transferencia de peso hacia el hemicuerpo afectado, la simetría postural, la velocidad de ejecución, la presencia de patrones sinérgicos anormales y el nivel de asistencia requerido para completar los cambios posturales.",
+        references: [
+          "Barbosa, N. E., et al. (2019). Translation and cultural validation of clinical observational scales – the Fugl-Meyer assessment for post stroke sensorimotor function in Colombian Spanish. Disability and Rehabilitation.",
+          "Fugl-Meyer, A. R., et al. (1975). The post-stroke hemiplegic patient. A method for evaluation of physical performance. Scandinavian Journal of Rehabilitation Medicine."
+        ]
+      },
+      transfers: {
+        title: "Transferencias",
+        subtitle: "Medida de Independencia Funcional (FIM)",
+        data: [
+          ["coin", "Costo:", "Gratuito y de acceso libre dentro de México, Chile y Ecuador"],
+          ["case", "Equipo necesario:", "Formulario FIM"],
+          ["cap", "Formación requerida:", "Requiere licencia otorgada por la UDSMR"],
+          ["clock", "Tiempo:", "Alrededor de 30 a 45 minutos"]
+        ],
+        purpose: "Evaluar el grado de independencia y el nivel de funcionalidad en actividades de la vida diaria: autocuidado, control de esfínteres, movilidad, transferencias y cognición social.",
+        population: "Personas adultas con ACV, Parkinson, lesión medular, atrofia muscular espinal o esclerosis lateral amiotrófica.",
+        procedure: "El instrumento contiene 18 ítems, divididos en áreas motoras y cognitivas. Cada ítem se puntúa de 1 a 7; la puntuación total permite interpretar el nivel de independencia observado.",
+        references: [
+          "Arauaz, A. (2021). Caracterización clínica y funcional de usuarios con enfermedad cerebrovascular.",
+          "Ministerio de Salud de Chile. (2020). Orientaciones clínicas para rehabilitación del paciente gran quemado adulto.",
+          "Uniform Data System for Medical Rehabilitation. (s. f.)."
+        ]
+      },
+      shortening: {
+        title: "Acortamientos musculares",
+        subtitle: "Goniometría (rango de movimiento articular pasivo) y Test de Silfverskiöld",
+        data: [
+          ["coin", "Costo:", "Goniómetro: $12 a $15."],
+          ["case", "Equipo necesario:", "Goniómetro universal o goniómetro digital."],
+          ["cap", "Formación requerida:", "No requiere licencia."],
+          ["clock", "Tiempo:", "Alrededor de 5 a 10 minutos"]
+        ],
+        purpose: "Cuantificar el rango de movimiento pasivo en miembros inferiores para evaluar acortamientos, típicamente afectados por hipertonía o espasticidad post-ACV.",
+        population: "Personas adultas con ACV isquémico de la arteria cerebral media y hemiparesia.",
+        procedure: "Test de Silfverskiöld: medición del ángulo articular pasivo máximo alcanzable antes de sentir resistencia mecánica. Para gastrocnemio y sóleo, con dorsiflexión de tobillo con la rodilla extendida frente a la rodilla flexionada a 90°.",
+        references: [
+          "Ansari, N. N., et al. (2008). The modified Tardieu scale for the measurement of elbow flexor spasticity in adult patients with hemiplegia.",
+          "Banky, M., Williams, G., Davey, R., & Tirosh, O. (2022). Inertial sensors for measuring spasticity of the ankle plantarflexors using the modified Tardieu scale."
+        ]
+      }
+    };
+
+    const crumbs = {
+      home: [["Inicio", "home"]],
+      areas: [["Inicio", "home"], ["Lesión encefálica adquirida", "areas"]],
+      motor: [["Inicio", "home"], ["Lesión encefálica adquirida", "areas"], ["Área motora", "motor"]],
+      lower: [["Inicio", "home"], ["Lesión encefálica adquirida", "areas"], ["Área motora", "motor"], ["Extremidades inferiores", "lower"]]
+    };
+
+    function statusBar() {
+      return `<div class="status-bar"><span>9:30</span><span class="status-camera"></span><span class="status-right"><i class="signal"></i><i class="battery"></i></span></div>`;
+    }
+
+    function menuButton() {
+      return `<button class="icon-button dots-button" type="button" aria-label="Abrir trazabilidad" data-overlay="trace">${icon("dots", 25)}</button>`;
+    }
+
+    function bottomNav() {
+      return `<nav class="bottom-nav" aria-label="Navegación principal">
+        <button class="nav-item" type="button" data-overlay="info">${icon("info", 23)}<span>Información</span></button>
+        <button class="nav-item" type="button" data-go="home">${icon("plus", 24)}<span>Inicio</span></button>
+        <button class="nav-item" type="button" data-overlay="settings">${icon("settings", 24)}<span>Ajustes</span></button>
+      </nav>`;
+    }
+
+    function searchBox(placeholder) {
+      return `<label class="search">${icon("search", 22)}<input type="search" data-search placeholder="${placeholder}" value="${escapeHtml(state.query)}" aria-label="${placeholder}"></label>`;
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    }
+
+    function breadcrumb(items) {
+      return `<div class="breadcrumbs">${items.map(([label, target], index) => `${index ? "<span aria-hidden=\"true\">&gt;</span>" : ""}<button type="button" data-go="${target}">${label}</button>`).join("")}</div>`;
+    }
+
+    function card({ title, text, lines, iconName, imgSrc, target, compact = false }) {
+      const tag = target ? "button" : "article";
+      const extra = target ? `type="button" data-go="${target}"` : "";
+      const list = lines ? `<ul>${lines.map(line => `<li>${line}</li>`).join("")}</ul>` : "";
+      const visual = imgSrc
+        ? `<img src="${imgSrc}" alt="" style="width:44px;height:44px;object-fit:contain;">`
+        : icon(iconName, 44);
+      return `<${tag} class="choice-card ${compact ? "area-card compact" : "area-card"} filterable" ${extra}>
+        <span class="choice-icon">${visual}</span>
+        <span class="choice-copy"><strong>${title}</strong>${text ? `<span>${text}</span>` : ""}${list}</span>
+        ${target ? `<span class="card-arrow">${icon("arrow", 30)}</span>` : ""}
+      </${tag}>`;
+    }
+
+    function homeScreen() {
+      const cards = [
+        { title: "Lesión encefálica adquirida", text: "Ver las enfermedades que se incluyen", imgSrc: "lesion-encefalica.png", target: "areas" },
+        { title: "Lesión medular", text: "Ver las enfermedades que se incluyen", imgSrc: "lesion-medular.png" },
+        { title: "Enfermedad neurodegenerativa", text: "Ver las enfermedades que se incluyen", imgSrc: "neurodegenerativa.png" },
+        { title: "Polineuropatía", text: "Ver las enfermedades que se incluyen", imgSrc: "polineuropatia.png" }
+      ];
+      return `<section class="screen" data-screen="home">
+        <header class="home-header"><div class="home-heading"><div><h1>Aplicación COIL</h1><p>Bienvenido a nuestra aplicación</p></div>${menuButton()}</div></header>
+        ${searchBox("Buscar evaluación o área")}
+        <h2 class="section-heading">Seleccione el diagnóstico principal:</h2>
+        <div class="card-list">${cards.map(item => card({ ...item, compact: true })).join("")}</div>
+      </section>`;
+    }
+
+    function categoryScreen(route) {
+      if (route === "areas") {
+        const cards = [
+          { title: "Área motora", lines: ["Extremidades superiores", "Extremidades inferiores", "Equilibrio", "Marcha"], imgSrc: "area-motora.png", target: "motor" },
+          { title: "Área cognitiva", lines: ["Funciones cognitivas básicas", "Funciones cognitivas superiores", "Evaluación de funciones frontales", "Síndrome confusional agudo (delirium)", "Conciencia"], imgSrc: "area-cognitiva.png" },
+          { title: "Área de evaluación del contexto físico", lines: ["Accesibilidad arquitectónica", "Requerimientos de adaptación", "Requerimientos de ayudas técnicas"], imgSrc: "area-evaluacion-contexto.png" },
+          { title: "Sensibilidad", lines: ["Sensibilidad superficial", "Sensibilidad profunda", "Mixta"], imgSrc: "sensibilidad.png" },
+          { title: "Actividades de la vida diaria", lines: ["Básicas", "Instrumental"], imgSrc: "actividades-vida-diaria.png" }
+        ];
+        return `<section class="screen" data-screen="areas">
+          <header class="page-top"><button class="icon-button back-button" type="button" data-go="home" aria-label="Volver">${icon("back", 25)}</button><h1>Lesión encefálica adquirida</h1>${menuButton()}</header>
+          ${breadcrumb(crumbs.areas)}
+          ${searchBox("Buscar evaluación o área")}
+          <h2 class="section-heading">Seleccione al área a consultar</h2>
+          <div class="card-list">${cards.map(item => card(item)).join("")}</div>
+        </section>`;
+      }
+      if (route === "motor") {
+        const cards = [
+          { title: "Extremidades superiores", text: "5 subáreas", iconName: "arm" },
+          { title: "Extremidades inferiores", text: "5 subáreas", iconName: "leg", target: "lower" },
+          { title: "Equilibrio", text: "3 subáreas", iconName: "balance" },
+          { title: "Marcha", text: "3 subáreas", iconName: "walk" }
+        ];
+        return `<section class="screen" data-screen="motor">
+          <header class="page-top"><button class="icon-button back-button" type="button" data-go="areas" aria-label="Volver">${icon("back", 25)}</button><h1>Área motora</h1>${menuButton()}</header>
+          ${breadcrumb(crumbs.motor)}
+          ${searchBox("Buscar en el área motora")}
+          <h2 class="section-heading">Seleccione la subárea</h2>
+          <div class="card-list">${cards.map(item => card({ ...item, compact: true })).join("")}</div>
+        </section>`;
+      }
+      const cards = [
+        { title: "Tono muscular", text: "Escala de Ashworth", iconName: "muscle", target: "tone" },
+        { title: "Evaluación de fuerza", text: "Escala MRC (Medical Research Council)", iconName: "arm", target: "strength" },
+        { title: "Transiciones", text: "Fugl-Meyer", iconName: "stairs", target: "transitions" },
+        { title: "Transferencias", text: "FIM e índice de Barthel", iconName: "transfer", target: "transfers" },
+        { title: "Acortamientos musculares", text: "Goniometría y Silfverskiöld / Tardieu modificada", iconName: "stretch", target: "shortening" }
+      ];
+      return `<section class="screen" data-screen="lower">
+        <header class="page-top"><button class="icon-button back-button" type="button" data-go="motor" aria-label="Volver">${icon("back", 25)}</button><h1>Extremidades inferiores</h1>${menuButton()}</header>
+        ${breadcrumb(crumbs.lower)}
+        ${searchBox("Buscar evaluación")}
+        <h2 class="section-heading">Subáreas <small>(Diagnóstico: Lesión encefálica adquirida)</small></h2>
+        <div class="card-list">${cards.map(item => card({ ...item, compact: true })).join("")}</div>
+      </section>`;
+    }
+
+    function detailBreadcrumb(route) {
+      const items = [...crumbs.lower, [evaluations[route].title, route]];
+      return `<div class="breadcrumbs detail-breadcrumbs">${items.map(([label, target], index) => `${index ? "<span aria-hidden=\"true\">&gt;</span>" : ""}<button type="button" data-go="${target}">${label}</button>`).join("")}</div>`;
+    }
+
+    function dataCards(data) {
+      return `<div class="data-list">${data.map(([iconName, label, value]) => `<article class="data-card"><span class="data-icon">${icon(iconName, 39)}</span><p><strong>${label}</strong> ${value}</p></article>`).join("")}</div>`;
+    }
+
+    function accordion(route, key, label, iconName, content) {
+      const open = Boolean(state.accordions[`${route}-${key}`]);
+      return `<div><button class="accordion" type="button" aria-expanded="${open}" data-accordion="${key}" data-route="${route}">
+        <span class="accordion-icon">${icon(iconName, 38)}</span><span class="accordion-label">${label}</span><span class="accordion-chevron">${icon("chevron", 18)}</span>
+      </button><div class="accordion-panel" ${open ? "" : "hidden"}>${content}</div></div>`;
+    }
+
+    function toneTabs() {
+      const tabs = [["pauta", "Pauta"], ["escala", "Escala"], ["validacion", "Validación"]];
+      return `<div class="tabs">${tabs.map(([key, label]) => `<button class="tab ${state.toneTab === key ? "active" : ""}" type="button" aria-pressed="${state.toneTab === key}" data-tone-tab="${key}">${label}</button>`).join("")}</div>`;
+    }
+
+    function tonePane(data) {
+      if (state.toneTab === "escala") {
+        const rows = [
+          ["0", "No hay aumento en el tono muscular."],
+          ["1", "Ligero aumento del tono al final del movimiento."],
+          ["1+", "Ligero aumento del tono durante menos de la mitad del movimiento."],
+          ["2", "Aumento más marcado del tono durante la mayor parte del movimiento."],
+          ["3", "Aumento considerable del tono; el movimiento pasivo es difícil."],
+          ["4", "La extremidad está rígida en flexión o extensión."]
+        ];
+        return `<article class="content-card"><h3>Infografía: Escala de Ashworth modificada</h3><div class="scale-sheet"><h3>ESCALA DE ASHWORTH MODIFICADA (MAS)</h3>${rows.map(([score, text]) => `<div class="scale-row"><span class="scale-score">${score}</span><span>${text}</span></div>`).join("")}</div></article>`;
+      }
+      if (state.toneTab === "validacion") {
+        return `<article class="content-card"><div class="validation-box"><strong>${icon("file", 18)} Validada para ECU · CHI · MÉX</strong><p>Cuenta con amplia evidencia internacional de validez y confiabilidad para la evaluación del tono muscular y la espasticidad en personas con alteraciones neurológicas, incluyendo ACV.</p></div><div class="country-list"><strong>Evidencia por país</strong><span><b class="country-pill">Chile</b> Identificó su utilización en poblaciones de Chile.</span><span><b class="country-pill">Ecuador</b> Identificó su utilización en poblaciones de Ecuador.</span><span><b class="country-pill warn">México</b></span></div><p class="notice">Sin embargo, no se identificó una validación específica publicada para la población mexicana.</p></article>`;
+      }
+      return `<article class="content-card"><h3>Procedimiento</h3><p>${data.procedure}</p><div class="video-placeholder" aria-label="Referencia visual de procedimiento"><span class="play-mark">${icon("video", 42)}</span><span class="video-label">[Video del procedimiento]</span></div></article>`;
+    }
+
+    function staticTabs(route) {
+      if (route === "shortening") return `<div class="stretch-switch"><span>Goniometría + Silfverskiöld</span><span>Tardieu Modificada</span></div>`;
+      return `<div class="tabs" aria-label="Secciones de la pauta"><span class="tab active static">Pauta</span><span class="tab static">Escala</span><span class="tab static">Validación</span></div>`;
+    }
+
+    function bibliography(data) {
+      return `<section class="bibliography"><h2>Bibliografía y referencias</h2><div class="reference-card">${data.references.map(ref => `<p>${ref}</p>`).join("")}</div></section>`;
+    }
+
+    function detailScreen(route) {
+      const data = evaluations[route];
+      const isTone = route === "tone";
+      const main = isTone
+        ? `<div class="divider"></div>
+           <h2 class="detail-section-title">Datos de aplicación</h2>${dataCards(data.data)}
+           <div class="divider"></div>
+           <div class="accordion-list">
+             ${accordion(route, "purpose", "Propósito", "target", data.purpose)}
+             ${accordion(route, "population", "Diagnóstico y Población", "people", data.population)}
+           </div>
+           <div class="divider"></div><h2 class="tabs-title">Información de la pauta</h2>${toneTabs()}${tonePane(data)}`
+        : `<div class="divider"></div><h2 class="detail-section-title">Datos de aplicación</h2>${dataCards(data.data)}
+           <div class="divider"></div>
+           <div class="accordion-list">
+             ${accordion(route, "purpose", "Propósito", "target", data.purpose)}
+             ${accordion(route, "population", "Diagnóstico y población", "people", data.population)}
+           </div>
+           <div class="divider"></div><h2 class="tabs-title">Información de la pauta</h2>${staticTabs(route)}
+           <article class="content-card"><h3>Procedimiento</h3><p>${data.procedure}</p><div class="video-placeholder" aria-label="Referencia visual de procedimiento"><span class="play-mark">${icon("video", 42)}</span><span class="video-label">[Video del procedimiento]</span></div></article>`;
+      return `<section class="screen" data-screen="${route}">
+        <header class="detail-top"><button class="icon-button back-button" type="button" data-go="lower" aria-label="Volver a subáreas">${icon("back", 25)}</button>${menuButton()}</header>
+        <div class="detail-body">
+          ${detailBreadcrumb(route)}
+          <h1 class="detail-title">${data.title}</h1>
+          <p class="detail-subtitle">${data.subtitle}</p>
+          ${route === "shortening" ? staticTabs(route) : ""}
+          ${main}
+          ${bibliography(data)}
+        </div>
+      </section>`;
+    }
+
+    function overlayMarkup() {
+      if (!state.overlay) return "";
+      if (state.overlay === "settings") {
+        return `<div class="backdrop" data-backdrop><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+          <h2 id="dialog-title">Ajustes de Visualización</h2>
+          <ul><li>Tamaño de fuente: Estándar clínico</li><li>Menú flotante rápido: Activado</li><li>Modo de navegación: Flujo completo interactivo</li></ul>
+          <button class="dialog-button" type="button" data-dismiss>Listo</button>
+        </section></div>`;
+      }
+      if (state.overlay === "info") {
+        return `<div class="backdrop" data-backdrop><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+          <h2 id="dialog-title">Acerca de Aplicación COIL</h2>
+          <p>Guía clínica interactiva de evaluación fisioterapéutica y funcional para pacientes con lesiones neurológicas.</p>
+          <p><strong>Módulo activo:</strong> Lesión encefálica adquirida → Área motora → Extremidades inferiores.</p>
+          <button class="dialog-button" type="button" data-dismiss>Cerrar</button>
+        </section></div>`;
+      }
+      return `<div class="backdrop" data-backdrop><section class="dialog trace-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+        <h2 id="dialog-title">Mapa de Trazabilidad del Prototipo</h2>
+        <p class="trace-step">P1. Página principal → Tarjeta Lesión encefálica adquirida → P2</p>
+        <p class="trace-step">P2. Lesión encefálica - Áreas → Tarjeta Área motora → P3</p>
+        <p class="trace-step">P3. Área motora → Tarjeta Extremidades inferiores → P4</p>
+        <p class="trace-step">P4. Extremidades inferiores conecta con las 5 escalas:</p>
+        <ul class="trace-list"><li>Tono muscular (Ashworth)</li><li>Evaluación de fuerza (MRC)</li><li>Transiciones (Fugl-Meyer)</li><li>Transferencias (FIM / Barthel)</li><li>Acortamientos musculares (Goniometría / Silfverskiöld)</li></ul>
+        <button class="dialog-button" type="button" data-dismiss>Entendido</button>
+      </section></div>`;
+    }
+
+    function render() {
+      let content;
+      if (state.screen === "home") content = homeScreen();
+      else if (["areas", "motor", "lower"].includes(state.screen)) content = categoryScreen(state.screen);
+      else content = detailScreen(state.screen);
+      app.innerHTML = `<main class="device">${statusBar()}${content}${bottomNav()}${overlayMarkup()}</main>`;
+      const search = app.querySelector("[data-search]");
+      if (search && state.query) filterCards(state.query);
+    }
+
+    function go(screen) {
+      state.screen = screen;
+      state.query = "";
+      state.overlay = null;
+      render();
+      const viewport = app.querySelector(".screen");
+      if (viewport) viewport.scrollTop = 0;
+    }
+
+    function filterCards(query) {
+      const normalized = query.trim().toLocaleLowerCase("es");
+      app.querySelectorAll(".filterable").forEach(element => {
+        element.hidden = normalized !== "" && !element.textContent.toLocaleLowerCase("es").includes(normalized);
+      });
+    }
+
+    app.addEventListener("input", event => {
+      if (!event.target.matches("[data-search]")) return;
+      state.query = event.target.value;
+      filterCards(state.query);
+    });
+
+    app.addEventListener("click", event => {
+      const dismiss = event.target.closest("[data-dismiss]") || event.target.matches("[data-backdrop]");
+      if (dismiss) {
+        state.overlay = null;
+        render();
+        return;
+      }
+      const overlayButton = event.target.closest("[data-overlay]");
+      if (overlayButton) {
+        state.overlay = overlayButton.dataset.overlay;
+        render();
+        const close = app.querySelector(".dialog-button");
+        if (close) close.focus();
+        return;
+      }
+      const toneTab = event.target.closest("[data-tone-tab]");
+      if (toneTab) {
+        state.toneTab = toneTab.dataset.toneTab;
+        render();
+        return;
+      }
+      const accordionButton = event.target.closest("[data-accordion]");
+      if (accordionButton) {
+        const key = `${accordionButton.dataset.route}-${accordionButton.dataset.accordion}`;
+        state.accordions[key] = !state.accordions[key];
+        render();
+        return;
+      }
+      const navigation = event.target.closest("[data-go]");
+      if (navigation) {
+        go(navigation.dataset.go);
+        return;
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && state.overlay) {
+        state.overlay = null;
+        render();
+      }
+    });
+
+    let dragStart = null;
+    app.addEventListener("pointerdown", event => { dragStart = { x: event.clientX, y: event.clientY }; });
+    app.addEventListener("pointerup", event => {
+      if (!dragStart || !["tone", "strength", "transitions", "transfers", "shortening"].includes(state.screen)) return;
+      const dx = event.clientX - dragStart.x;
+      const dy = event.clientY - dragStart.y;
+      if (dx > 90 && Math.abs(dx) > Math.abs(dy) * 1.3) go("lower");
+      dragStart = null;
+    });
+
+    render();
+  </script>
+</body>
+</html>
