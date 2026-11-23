@@ -692,15 +692,7 @@
 
     function tonePane(data) {
       if (state.toneTab === "escala") {
-        const rows = [
-          ["0", "No hay aumento en el tono muscular."],
-          ["1", "Ligero aumento del tono al final del movimiento."],
-          ["1+", "Ligero aumento del tono durante menos de la mitad del movimiento."],
-          ["2", "Aumento más marcado del tono durante la mayor parte del movimiento."],
-          ["3", "Aumento considerable del tono; el movimiento pasivo es difícil."],
-          ["4", "La extremidad está rígida en flexión o extensión."]
-        ];
-        return `<article class="content-card"><h3>Infografía: Escala de Ashworth modificada</h3><div class="scale-sheet"><h3>ESCALA DE ASHWORTH MODIFICADA (MAS)</h3>${rows.map(([score, text]) => `<div class="scale-row"><span class="scale-score">${score}</span><span>${text}</span></div>`).join("")}</div></article>`;
+        return `<article class="content-card"><h3>Infografía: Escala de Ashworth modificada</h3><img src="escala-ashworth.jpeg" alt="Infografía Escala de Ashworth modificada" style="width:100%;height:auto;border-radius:12px;margin-top:10px;display:block;"></article>`;
       }
       if (state.toneTab === "validacion") {
         return `<article class="content-card"><div class="validation-box"><strong>${icon("file", 18)} Validada para ECU · CHI · MÉX</strong><p>Cuenta con amplia evidencia internacional de validez y confiabilidad para la evaluación del tono muscular y la espasticidad en personas con alteraciones neurológicas, incluyendo ACV.</p></div><div class="country-list"><strong>Evidencia por país</strong><span><b class="country-pill">Chile</b> Identificó su utilización en poblaciones de Chile.</span><span><b class="country-pill">Ecuador</b> Identificó su utilización en poblaciones de Ecuador.</span><span><b class="country-pill warn">México</b></span></div><p class="notice">Sin embargo, no se identificó una validación específica publicada para la población mexicana.</p></article>`;
