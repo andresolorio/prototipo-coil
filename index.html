@@ -640,10 +640,10 @@
       }
       if (route === "motor") {
         const cards = [
-          { title: "Extremidades superiores", text: "5 subáreas", iconName: "arm" },
-          { title: "Extremidades inferiores", text: "5 subáreas", iconName: "leg", target: "lower" },
-          { title: "Equilibrio", text: "3 subáreas", iconName: "balance" },
-          { title: "Marcha", text: "3 subáreas", iconName: "walk" }
+          { title: "Extremidades superiores", text: "5 subáreas", imgSrc: "extremidades-superiores.png" },
+          { title: "Extremidades inferiores", text: "5 subáreas", imgSrc: "extremidades-inferiores.png", target: "lower" },
+          { title: "Equilibrio", text: "3 subáreas", imgSrc: "equilibrio.png" },
+          { title: "Marcha", text: "3 subáreas", imgSrc: "marcha.png" }
         ];
         return `<section class="screen" data-screen="motor">
           <header class="page-top"><button class="icon-button back-button" type="button" data-go="areas" aria-label="Volver">${icon("back", 25)}</button><h1>Área motora</h1>${menuButton()}</header>
